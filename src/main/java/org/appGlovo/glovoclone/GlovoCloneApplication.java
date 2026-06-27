@@ -2,12 +2,12 @@ package org.appGlovo.glovoclone;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.scheduling.annotation.EnableAsync;
 
 @SpringBootApplication
+@EnableAsync
 public class GlovoCloneApplication {
-
 	public static void main(String[] args) {
 		SpringApplication.run(GlovoCloneApplication.class, args);
 	}
-
 }

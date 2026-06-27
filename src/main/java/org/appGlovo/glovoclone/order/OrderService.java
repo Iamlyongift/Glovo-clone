@@ -3,10 +3,12 @@ package org.appGlovo.glovoclone.order;
 import lombok.RequiredArgsConstructor;
 import org.appGlovo.glovoclone.cart.Cart;
 import org.appGlovo.glovoclone.cart.CartService;
+import org.appGlovo.glovoclone.notification.OrderStatusChangedEvent;
 import org.appGlovo.glovoclone.order.dto.*;
 import org.appGlovo.glovoclone.user.User;
 import org.appGlovo.glovoclone.vendor.Vendor;
 import org.appGlovo.glovoclone.vendor.VendorRepository;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -20,6 +22,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CartService cartService;
     private final VendorRepository vendorRepository;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Transactional
     public OrderResponse placeOrder(PlaceOrderRequest request, User customer) {
@@ -61,6 +64,9 @@ public class OrderService {
 
         // clear the cart after successful order
         cartService.clearCart(customer);
+        eventPublisher.publishEvent(
+                new OrderStatusChangedEvent(this, order, null, OrderStatus.PLACED)
+        );
 
         return toResponse(order);
     }
@@ -87,10 +93,13 @@ public class OrderService {
             throw new IllegalArgumentException("You do not own this order's vendor");
         }
 
-        validateStatusTransition(order.getStatus(), request.getStatus());
+        OrderStatus previousStatus = order.getStatus(); // capture BEFORE changing it
+        validateStatusTransition(previousStatus, request.getStatus());
         order.setStatus(request.getStatus());
         orderRepository.save(order);
-
+        eventPublisher.publishEvent(
+                new OrderStatusChangedEvent(this, order, previousStatus, request.getStatus())
+        );
         return toResponse(order);
     }
 
