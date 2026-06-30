@@ -32,6 +32,12 @@ public class VendorService {
         return toResponse(vendor);
     }
 
+    public VendorResponse getVendorByOwnerId(Long ownerId) {
+        Vendor vendor = vendorRepository.findByOwnerId(ownerId)
+                .orElseThrow(() -> new IllegalArgumentException("No vendor profile found for this user"));
+        return toResponse(vendor);
+    }
+
     public List<VendorResponse> getAllOpenVendors() {
         return vendorRepository.findByIsOpenTrue().stream()
                 .map(this::toResponse)

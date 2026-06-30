@@ -41,4 +41,9 @@ public class VendorController {
             @AuthenticationPrincipal User owner) {
         return ResponseEntity.ok(vendorService.addMenuItem(id, request, owner));
     }
+
+    @GetMapping("/me")
+    public ResponseEntity<VendorResponse> getMyVendor(@AuthenticationPrincipal User owner) {
+        return ResponseEntity.ok(vendorService.getVendorByOwnerId(owner.getId()));
+    }
 }
